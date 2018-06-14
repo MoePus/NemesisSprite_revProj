@@ -1,0 +1,114 @@
+//------------------------------------------------
+//--- 010 Editor v8.0 Binary Template
+//
+//      File: 
+//   Authors: 
+//   Version: 
+//   Purpose: 
+//  Category: 
+// File Mask: 
+//  ID Bytes: 
+//   History: 
+//------------------------------------------------
+DWORD anmiPackNum;
+
+
+DWORD anmipack[anmiPackNum]<format=hex>;
+
+DWORD anmiOffset;
+DWORD unk_C<hidden=true>;
+DWORD anmiNum;
+
+DWORD anmiFrameSlot[anmiNum]<format=hex>;
+
+
+void coordReadSkip(int stride)
+{
+    DWORD tag;
+    if(tag==0)
+    {
+        return;
+    }
+    struct InnerInfo(int stride)
+    {
+        float time;
+        DWORD flag;
+        DWORD flag2<format=hex>;
+        if(stride-12 > 0)
+            float innerInfo[(stride-12)/4];
+    };
+    InnerInfo innerInfo(stride)[tag]<optimize=false>;
+
+
+    //float innerInfo[(stride*tag-8)/4];
+    //FSeek(FTell()+tag*stride-8);
+
+/*
+    else if(tag==0)
+    {
+        FSeek(FTell());
+    }
+    else
+    {
+        FSeek(FTell()+tag*stride);
+    }*/
+}
+
+void coordInfo()
+{
+    local DWORD coordS,coordE;
+
+    coordReadSkip(44); //divided
+    coordReadSkip(28); //translateX
+    coordReadSkip(28); //translateY
+    coordReadSkip(28); //Rotate
+    coordReadSkip(28); //ScaleX
+    coordReadSkip(28); //ScaleY
+    coordReadSkip(28); //alpha
+    coordReadSkip(12);
+    coordReadSkip(12);
+    coordReadSkip(12);
+    coordReadSkip(12);
+    coordReadSkip(108);
+    coordReadSkip(56);
+
+    return;
+}
+
+local int i=0,j=0;
+local DWORD infoLen;
+
+struct FrameAnmi
+{
+    DWORD unk_0<hidden=true>;
+    float duration;
+    local int coordSize = 0;
+    while(ReadUInt(FTell()+coordSize*4))
+    {
+        coordSize++;
+    }
+    DWORD coordOffset[coordSize]<format=hex>;
+    for(j=0;j<coordSize;j++)
+    {
+        FSeek(this.coordOffset[j]);
+        struct CoordInfo
+        {
+            DWORD compositeType;
+            coordInfo();
+            //infoLen = coordInfoLength();
+            //DWORD info[infoLen]<format=hex>;
+            DWORD childrenSize;
+            if(childrenSize)
+                DWORD childrenIndex[childrenSize];
+        }coordInfo;
+    }
+};
+
+
+for(i=0;i<anmiNum;i++)
+{
+FSeek(anmiFrameSlot[i]);
+FrameAnmi frameAnmi;
+}
+
+
